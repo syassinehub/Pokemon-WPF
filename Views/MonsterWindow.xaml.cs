@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
-using Microsoft.EntityFrameworkCore; // Nécessaire pour Include
+using Microsoft.EntityFrameworkCore;
 using PokemonWpf.Model;
 
 namespace PokemonWpf.Views
@@ -14,7 +14,6 @@ namespace PokemonWpf.Views
             LoadMonsters();
         }
 
-        // Méthode pour ouvrir la fenêtre des sorts
         private void OnViewSpellsClick(object sender, RoutedEventArgs e)
         {
             var spellWindow = new SpellWindow();
@@ -22,7 +21,6 @@ namespace PokemonWpf.Views
             this.Close();
         }
 
-        // Méthode pour aller à la page de combat avec le monstre sélectionné
         private void GoToBattlePage_Click(object sender, RoutedEventArgs e)
         {
             if (MonsterDataGrid.SelectedItem is Monster selectedMonster)
@@ -39,23 +37,19 @@ namespace PokemonWpf.Views
             }
         }
 
-        // Méthode pour charger les monstres avec leurs sorts depuis la base de données
         private void LoadMonsters()
         {
             try
             {
                 using var context = new ExerciceMonsterContext();
-                // Inclure les sorts (Spells) liés aux monstres
                 List<Monster> monsters = context.Monsters
                                                 .Include(m => m.Spells)
                                                 .ToList();
 
-                // Mettre les monstres dans le DataGrid
                 MonsterDataGrid.ItemsSource = monsters;
             }
             catch (System.Exception ex)
             {
-                // Gestion précise de l'exception
                 MessageBox.Show($"Une erreur est survenue lors du chargement des monstres : {ex.Message}",
                                 "Erreur",
                                 MessageBoxButton.OK, MessageBoxImage.Error);
