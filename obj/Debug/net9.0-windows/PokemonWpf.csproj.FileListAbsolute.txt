@@ -159,3 +159,4 @@ C:\Users\yassi\source\repos\PokemonWpf\PokemonWpf\obj\Debug\net9.0-windows\Pokem
 C:\Users\yassi\source\repos\PokemonWpf\PokemonWpf\obj\Debug\net9.0-windows\PokemonWpf.genruntimeconfig.cache
 C:\Users\yassi\source\repos\PokemonWpf\PokemonWpf\obj\Debug\net9.0-windows\ref\PokemonWpf.dll
 C:\Users\yassi\source\repos\PokemonWpf\PokemonWpf\obj\Debug\net9.0-windows\GeneratedInternalTypeHelper.g.cs
+C:\Users\yassi\source\repos\PokemonWpf\PokemonWpf\obj\Debug\net9.0-windows\PokemonWpf.sourcelink.json

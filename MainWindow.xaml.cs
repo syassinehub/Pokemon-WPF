@@ -1,31 +1,32 @@
 ﻿using System;
 using System.Data.SqlClient;
 using System.Windows;
-using PokemonWpf.Views; 
+using Microsoft.Identity.Client;
+using PokemonWpf.Views;
 
 namespace PokemonWpf
 {
     public partial class MainWindow : Window
     {
-        // Chaîne de connexion à ta base de données
-        private readonly string connectionString = @"Server=localhost\SQLEXPRESS;Database=ExerciceMonster;Trusted_Connection=True;";
-
         public MainWindow()
         {
             InitializeComponent();
         }
 
-
         private void OnLoginClick(object sender, RoutedEventArgs e)
         {
+            string connectionString = UrlDatabase.Text;
             string username = UsernameTextBox.Text;
             string password = PasswordBox.Password;
 
-            if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password))
+            if (string.IsNullOrWhiteSpace(connectionString) ||
+                string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password))
             {
                 MessageBox.Show("Please fill in all fields.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
+
+            AppConfig.ConnectionString = connectionString;
 
             try
             {
@@ -43,10 +44,9 @@ namespace PokemonWpf
                         {
                             MessageBox.Show("Login successful!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
 
-                            // Ouvrir MonsterWindow
                             var monsterWindow = new Views.MonsterWindow();
                             monsterWindow.Show();
-                            this.Close(); // Fermer la fenêtre actuelle
+                            this.Close();
                         }
                         else
                         {
@@ -61,17 +61,20 @@ namespace PokemonWpf
             }
         }
 
-
         private void OnSignInClick(object sender, RoutedEventArgs e)
         {
+            string connectionString = UrlDatabase.Text;
             string username = UsernameTextBox.Text;
             string password = PasswordBox.Password;
 
-            if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password))
+            if (string.IsNullOrWhiteSpace(connectionString) ||
+                string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password))
             {
                 MessageBox.Show("Please fill in all fields.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
+
+            AppConfig.ConnectionString = connectionString;
 
             try
             {
@@ -79,7 +82,6 @@ namespace PokemonWpf
                 {
                     connection.Open();
 
-                    // Vérifier si le nom d'utilisateur existe déjà
                     string checkQuery = "SELECT COUNT(1) FROM Login WHERE Username = @Username";
                     using (SqlCommand checkCommand = new SqlCommand(checkQuery, connection))
                     {
@@ -93,7 +95,6 @@ namespace PokemonWpf
                         }
                     }
 
-                    // Insérer le nouveau compte si le nom d'utilisateur n'existe pas
                     string insertQuery = "INSERT INTO Login (Username, PasswordHash) VALUES (@Username, HASHBYTES('SHA2_256', @Password))";
                     using (SqlCommand insertCommand = new SqlCommand(insertQuery, connection))
                     {

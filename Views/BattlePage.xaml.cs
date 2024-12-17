@@ -1,25 +1,52 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data.SqlClient;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
 using PokemonWpf.Model;
 
 namespace PokemonWpf.Views
 {
-    public partial class BattlePage : Window
+    public partial class BattlePage : Window, INotifyPropertyChanged
     {
-        private readonly string connectionString = @"Server=localhost\SQLEXPRESS;Database=ExerciceMonster;Trusted_Connection=True;";
+        private MediaPlayer _mediaPlayer;
 
-        public Monster PlayerMonster { get; set; }
-        public Monster EnemyMonster { get; set; }
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        private Monster _playerMonster;
+        public Monster PlayerMonster
+        {
+            get => _playerMonster;
+            set
+            {
+                _playerMonster = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private Monster _enemyMonster;
+        public Monster EnemyMonster
+        {
+            get => _enemyMonster;
+            set
+            {
+                _enemyMonster = value;
+                OnPropertyChanged();
+            }
+        }
+
         public List<Spell> PlayerSpells { get; set; }
+
         private readonly Random random = new Random();
 
         public BattlePage(Monster playerMonster)
         {
             InitializeComponent();
+
             PlayerMonster = playerMonster;
             PlayerMonster.MaxHealth = PlayerMonster.Health;
 
@@ -32,59 +59,40 @@ namespace PokemonWpf.Views
             DataContext = this;
 
             UpdateHealthBars();
+            PlayBackgroundMusic();
+        }
+
+        private void PlayBackgroundMusic()
+        {
+            _mediaPlayer = new MediaPlayer();
+
+            string musicPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "Pokemon Emerald Soundtrack #10 - Wild Pokemon Battle!.mp3");
+
+            _mediaPlayer.Open(new Uri(musicPath));
+            _mediaPlayer.MediaEnded += (s, e) => _mediaPlayer.Position = TimeSpan.Zero;
+            _mediaPlayer.Play();
+        }
+
+        protected override void OnClosed(EventArgs e)
+        {
+            base.OnClosed(e);
+            _mediaPlayer?.Stop();
+            _mediaPlayer?.Close();
         }
 
         private Monster GetRandomEnemyMonster()
         {
-            using var connection = new SqlConnection(connectionString);
-            connection.Open();
-
-            string query = "SELECT TOP 1 Id, Name, Health, ImageURL FROM Monster ORDER BY NEWID()";
-            using var command = new SqlCommand(query, connection);
-            using var reader = command.ExecuteReader();
-
-            if (reader.Read())
-            {
-                return new Monster
-                {
-                    Id = reader.GetInt32(0),
-                    Name = reader.GetString(1),
-                    Health = reader.GetInt32(2),
-                    ImageUrl = reader.IsDBNull(3) ? null : reader.GetString(3) // Récupérer l'URL de l'image
-                };
-            }
-
-            throw new Exception("No enemy monster found.");
+            using var context = new ExerciceMonsterContext();
+            return context.Monsters.OrderBy(m => Guid.NewGuid()).FirstOrDefault()
+                ?? throw new Exception("No enemy monster found.");
         }
-
 
         private List<Spell> GetSpellsForMonster(int monsterId)
         {
-            var spells = new List<Spell>();
-
-            using var connection = new SqlConnection(connectionString);
-            connection.Open();
-
-            string query = @"SELECT s.Id, s.Name, s.Damage, s.Description
-                             FROM Spell s
-                             INNER JOIN MonsterSpell ms ON ms.SpellID = s.Id
-                             WHERE ms.MonsterID = @MonsterID";
-            using var command = new SqlCommand(query, connection);
-            command.Parameters.AddWithValue("@MonsterID", monsterId);
-
-            using var reader = command.ExecuteReader();
-            while (reader.Read())
-            {
-                spells.Add(new Spell
-                {
-                    Id = reader.GetInt32(0),
-                    Name = reader.GetString(1),
-                    Damage = reader.GetInt32(2),
-                    Description = reader.GetString(3)
-                });
-            }
-
-            return spells;
+            using var context = new ExerciceMonsterContext();
+            return context.Spells
+                          .Where(s => s.Monsters.Any(m => m.Id == monsterId))
+                          .ToList();
         }
 
         private void UseSpell_Click(object sender, RoutedEventArgs e)
@@ -105,18 +113,30 @@ namespace PokemonWpf.Views
             else
             {
                 MessageBox.Show("You won the battle!");
-                StartNewBattle(); 
+                StartNewBattle();
             }
         }
 
         private void StartNewBattle()
         {
+            PlayerMonster.Health = PlayerMonster.MaxHealth;
+
             EnemyMonster = GetRandomEnemyMonster();
             EnemyMonster.MaxHealth = EnemyMonster.Health;
 
             UpdateHealthBars();
 
             MessageBox.Show($"A new enemy Pokémon, {EnemyMonster.Name}, has appeared!");
+        }
+
+        private void RestartBattle_Click(object sender, RoutedEventArgs e)
+        {
+            PlayerMonster.Health = PlayerMonster.MaxHealth;
+            EnemyMonster = GetRandomEnemyMonster();
+            EnemyMonster.MaxHealth = EnemyMonster.Health;
+
+            MessageBox.Show("A new battle begins!");
+            UpdateHealthBars();
         }
 
         private void EnemyAttack()
@@ -138,29 +158,23 @@ namespace PokemonWpf.Views
 
                 var monsterWindow = new MonsterWindow();
                 monsterWindow.Show();
-                this.Close(); 
+                this.Close();
             }
         }
-
 
         private void UpdateHealthBars()
         {
             PlayerHealthBar.Value = PlayerMonster.Health;
             EnemyHealthBar.Value = EnemyMonster.Health;
-        }
 
-        private void RestartBattle_Click(object sender, RoutedEventArgs e)
-        {
-            PlayerMonster.Health = PlayerMonster.MaxHealth;
-            EnemyMonster = GetRandomEnemyMonster();
-            EnemyMonster.MaxHealth = EnemyMonster.Health;
-
-            MessageBox.Show("A new battle begins!");
-            UpdateHealthBars();
+            OnPropertyChanged(nameof(PlayerMonster));
+            OnPropertyChanged(nameof(EnemyMonster));
         }
 
         private void BackToMonsterList_Click(object sender, RoutedEventArgs e)
         {
+            var monsterWindow = new MonsterWindow();
+            monsterWindow.Show();
             this.Close();
         }
 
@@ -170,6 +184,11 @@ namespace PokemonWpf.Views
             {
                 SpellDetailsTextBlock.Text = $"Damage: {selectedSpell.Damage}\nDescription: {selectedSpell.Description}";
             }
+        }
+
+        protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 }

@@ -1,16 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data.SqlClient;
+﻿using System.Collections.Generic;
+using System.Linq;
 using System.Windows;
 using PokemonWpf.Model;
-using PokemonWpf.Views;
 
 namespace PokemonWpf.Views
 {
     public partial class MonsterWindow : Window
     {
-        private readonly string connectionString = @"Server=localhost\SQLEXPRESS;Database=ExerciceMonster;Trusted_Connection=True;";
-
         public MonsterWindow()
         {
             InitializeComponent();
@@ -21,6 +17,7 @@ namespace PokemonWpf.Views
         {
             var spellWindow = new SpellWindow();
             spellWindow.Show();
+            this.Close();
         }
 
         private void GoToBattlePage_Click(object sender, RoutedEventArgs e)
@@ -39,34 +36,13 @@ namespace PokemonWpf.Views
 
         private void LoadMonsters()
         {
-            List<Monster> monsters = new List<Monster>();
-
             try
             {
-                using (SqlConnection connection = new SqlConnection(connectionString))
-                {
-                    connection.Open();
-                    string query = "SELECT Id, Name, Health, ImageUrl FROM Monster";
-                    using (SqlCommand command = new SqlCommand(query, connection))
-                    {
-                        using (SqlDataReader reader = command.ExecuteReader())
-                        {
-                            while (reader.Read())
-                            {
-                                monsters.Add(new Monster
-                                {
-                                    Id = reader.GetInt32(0),
-                                    Name = reader.GetString(1),
-                                    Health = reader.GetInt32(2),
-                                    ImageUrl = reader.IsDBNull(3) ? null : reader.GetString(3)
-                                });
-                            }
-                        }
-                    }
-                }
+                using var context = new ExerciceMonsterContext();
+                List<Monster> monsters = context.Monsters.ToList();
                 MonsterDataGrid.ItemsSource = monsters;
             }
-            catch (Exception ex)
+            catch (System.Exception ex)
             {
                 MessageBox.Show($"An error occurred while loading monsters: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }

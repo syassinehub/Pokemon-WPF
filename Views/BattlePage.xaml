@@ -2,47 +2,44 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Battle Page" Height="600" Width="800" Background="#87CEEB">
-	<Grid>
-		<Grid.RowDefinitions>
-			<RowDefinition Height="*" />
-			<RowDefinition Height="Auto" />
-		</Grid.RowDefinitions>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
 
-		<Grid Grid.Row="0">
-			<Grid.ColumnDefinitions>
-				<ColumnDefinition Width="*" />
-				<ColumnDefinition Width="*" />
-			</Grid.ColumnDefinitions>
+        <Grid Grid.Row="0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
 
-			<!-- Player Side -->
-			<StackPanel Grid.Column="0" HorizontalAlignment="Center">
-				<TextBlock Text="{Binding PlayerMonster.Name}" FontSize="20" FontWeight="Bold" Foreground="DarkBlue" />
-				<ProgressBar x:Name="PlayerHealthBar" Width="200" Height="20" Margin="10" />
-				<Image Source="{Binding PlayerMonster.ImageUrl}" Width="150" Height="150" Stretch="Uniform" Margin="10" />
-			</StackPanel>
+            <StackPanel Grid.Column="0" HorizontalAlignment="Center">
+                <TextBlock Text="{Binding PlayerMonster.Name}" FontSize="20" FontWeight="Bold" Foreground="DarkBlue" />
+                <ProgressBar x:Name="PlayerHealthBar" Width="200" Height="20" Margin="10" Minimum="0" Maximum="{Binding PlayerMonster.MaxHealth}" Value="{Binding PlayerMonster.Health}" />
+                <Image Source="{Binding PlayerMonster.ImageUrl}" Width="150" Height="150" Stretch="Uniform" Margin="10" />
+            </StackPanel>
 
-			<!-- Enemy Side -->
-			<StackPanel Grid.Column="1" HorizontalAlignment="Center">
-				<TextBlock Text="{Binding EnemyMonster.Name}" FontSize="20" FontWeight="Bold" Foreground="DarkRed" />
-				<ProgressBar x:Name="EnemyHealthBar" Width="200" Height="20" Margin="10" />
-				<Image Source="{Binding EnemyMonster.ImageUrl}" Width="150" Height="150" Stretch="Uniform" Margin="10" />
-			</StackPanel>
-		</Grid>
+            <StackPanel Grid.Column="1" HorizontalAlignment="Center">
+                <TextBlock x:Name="EnemyNameTextBlock" Text="{Binding EnemyMonster.Name}" FontSize="20" FontWeight="Bold" Foreground="DarkRed" />
+                <ProgressBar x:Name="EnemyHealthBar" Width="200" Height="20" Margin="10" Minimum="0" Maximum="{Binding EnemyMonster.MaxHealth}" Value="{Binding EnemyMonster.Health}" />
+                <Image x:Name="EnemyImage" Source="{Binding EnemyMonster.ImageUrl}" Width="150" Height="150" Stretch="Uniform" Margin="10" />
+            </StackPanel>
+        </Grid>
 
-		<!-- Actions -->
-		<StackPanel Grid.Row="1" Orientation="Vertical" HorizontalAlignment="Center" Margin="20">
-			<ComboBox x:Name="SpellComboBox" Width="200" Height="30" Margin="10"
+        <StackPanel Grid.Row="1" Orientation="Vertical" HorizontalAlignment="Center" Margin="20">
+            <ComboBox x:Name="SpellComboBox" Width="200" Height="30" Margin="10"
                       DisplayMemberPath="Name" SelectionChanged="SpellComboBox_SelectionChanged" />
-			<TextBlock x:Name="SpellDetailsTextBlock" FontSize="14" Foreground="DarkGray" TextWrapping="Wrap" Margin="10" />
+            <TextBlock x:Name="SpellDetailsTextBlock" FontSize="14" Foreground="Blue" TextWrapping="Wrap" Margin="10" />
 
-			<StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-				<Button Content="Use Spell" Width="150" Height="40" Background="OrangeRed" Foreground="White"
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                <Button Content="Use Spell" Width="150" Height="40" Background="OrangeRed" Foreground="White"
                         FontWeight="Bold" Click="UseSpell_Click" Margin="10" />
-				<Button Content="Restart Battle" Width="150" Height="40" Background="Green" Foreground="White"
+                <Button Content="Restart Battle" Width="150" Height="40" Background="Green" Foreground="White"
                         FontWeight="Bold" Click="RestartBattle_Click" Margin="10" />
-				<Button Content="Back to Monster List" Width="200" Height="40" Background="Gray" Foreground="White"
+                <Button Content="Back to Monster List" Width="200" Height="40" Background="Gray" Foreground="White"
                         FontWeight="Bold" Click="BackToMonsterList_Click" Margin="10" />
-			</StackPanel>
-		</StackPanel>
-	</Grid>
+            </StackPanel>
+        </StackPanel>
+    </Grid>
 </Window>

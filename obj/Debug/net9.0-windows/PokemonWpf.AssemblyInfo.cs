@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("PokemonWpf")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+fd2d4d94f58f674dd57e7b4f907cf2e024b7e215")]
 [assembly: System.Reflection.AssemblyProductAttribute("PokemonWpf")]
 [assembly: System.Reflection.AssemblyTitleAttribute("PokemonWpf")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
