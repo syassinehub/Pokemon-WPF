@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Data.SqlClient;
+using System.Security.Cryptography;
+using System.Text;
 using System.Windows;
-using Microsoft.Identity.Client;
 using PokemonWpf.Views;
 
 namespace PokemonWpf
@@ -11,6 +12,15 @@ namespace PokemonWpf
         public MainWindow()
         {
             InitializeComponent();
+        }
+
+        private string ComputeHashBase64(string input)
+        {
+            using (SHA256 sha256 = SHA256.Create())
+            {
+                byte[] hashBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(input));
+                return Convert.ToBase64String(hashBytes);
+            }
         }
 
         private void OnLoginClick(object sender, RoutedEventArgs e)
@@ -33,13 +43,17 @@ namespace PokemonWpf
                 using (SqlConnection connection = new SqlConnection(connectionString))
                 {
                     connection.Open();
-                    string query = "SELECT COUNT(1) FROM Login WHERE Username = @Username AND PasswordHash = HASHBYTES('SHA2_256', @Password)";
+
+                    string query = "SELECT COUNT(1) FROM Login WHERE Username = @Username AND PasswordHash = @PasswordHash";
+
                     using (SqlCommand command = new SqlCommand(query, connection))
                     {
+                        string hashedPassword = ComputeHashBase64(password); 
                         command.Parameters.AddWithValue("@Username", username);
-                        command.Parameters.AddWithValue("@Password", password);
+                        command.Parameters.AddWithValue("@PasswordHash", hashedPassword);
 
                         int count = Convert.ToInt32(command.ExecuteScalar());
+
                         if (count == 1)
                         {
                             MessageBox.Show("Login successful!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
@@ -95,11 +109,12 @@ namespace PokemonWpf
                         }
                     }
 
-                    string insertQuery = "INSERT INTO Login (Username, PasswordHash) VALUES (@Username, HASHBYTES('SHA2_256', @Password))";
+                    string insertQuery = "INSERT INTO Login (Username, PasswordHash) VALUES (@Username, @PasswordHash)";
                     using (SqlCommand insertCommand = new SqlCommand(insertQuery, connection))
                     {
+                        string hashedPassword = ComputeHashBase64(password); 
                         insertCommand.Parameters.AddWithValue("@Username", username);
-                        insertCommand.Parameters.AddWithValue("@Password", password);
+                        insertCommand.Parameters.AddWithValue("@PasswordHash", hashedPassword);
 
                         insertCommand.ExecuteNonQuery();
                         MessageBox.Show($"Account created for {username}!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
