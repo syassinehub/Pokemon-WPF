@@ -43,6 +43,17 @@ namespace PokemonWpf.Views
 
         private readonly Random random = new Random();
 
+        private int _score;
+        public int Score
+        {
+            get => _score;
+            set
+            {
+                _score = value;
+                OnPropertyChanged(nameof(Score));
+            }
+        }
+
         public BattlePage(Monster playerMonster)
         {
             InitializeComponent();
@@ -112,7 +123,8 @@ namespace PokemonWpf.Views
             }
             else
             {
-                MessageBox.Show("You won the battle!");
+                Score++;
+                MessageBox.Show($"You won the battle! Your score is now {Score}.");
                 StartNewBattle();
             }
         }
