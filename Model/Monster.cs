@@ -19,4 +19,9 @@ public partial class Monster
     public virtual ICollection<Player> Players { get; set; } = new List<Player>();
 
     public virtual ICollection<Spell> Spells { get; set; } = new List<Spell>();
+
+    [NotMapped]
+    public string SpellNames => Spells != null && Spells.Any()
+        ? string.Join(", ", Spells.Select(s => s.Name))
+        : "Aucun sort";
 }
